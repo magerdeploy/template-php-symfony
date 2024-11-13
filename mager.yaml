@@ -1,0 +1,17 @@
+name: symfony-demo
+build:
+  target: frankenphp_prod
+services:
+  symfony-backend:
+    env:
+      SERVER_NAME: ${SERVER_NAME:-:80}
+      MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      MERCURE_URL: ${CADDY_MERCURE_URL:-https://symfony-demo.wip/.well-known/mercure}
+      MERCURE_PUBLIC_URL: ${CADDY_MERCURE_PUBLIC_URL:-https://symfony-demo.wip/.well-known/mercure}
+      MERCURE_JWT_SECRET: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+    proxy:
+      ports:
+        - 80/tcp
+      rule: Host(`{$host}`)
+      host: {$input.host}

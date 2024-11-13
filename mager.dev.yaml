@@ -1,0 +1,15 @@
+build:
+  target: frankenphp_dev
+services:
+  symfony-backend:
+    volumes:
+      - ./:/app
+      - ./frankenphp/Caddyfile:/etc/caddy/Caddyfile:readonly
+      - ./frankenphp/conf.d/20-app.dev.ini:/usr/local/etc/php/app.conf.d/20-app.dev.ini:readonly
+    env:
+      XDEBUG_MODE: "${XDEBUG_MODE:-off}"
+      MERCURE_EXTRA_DIRECTIVES: demo
+    proxy:
+      host: {$input.host}.wip
+    hosts:
+      - host.docker.internal:host-gateway
