@@ -1,5 +1,7 @@
 build:
   target: frankenphp_dev
+  args:
+    USER: 1000
 services:
   symfony-backend:
     volumes:

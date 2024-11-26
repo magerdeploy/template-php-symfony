@@ -1,7 +1,7 @@
 #syntax=docker/dockerfile:1
 
 # Versions
-FROM dunglas/frankenphp:1-{$input.php-version} AS frankenphp_upstream
+FROM dunglas/frankenphp:1-php8.3 AS frankenphp_upstream
 
 # The different stages of this Dockerfile are meant to be built into separate images
 # https://docs.docker.com/develop/develop-images/multistage-build/#stop-at-a-specific-build-stage
@@ -10,6 +10,8 @@ FROM dunglas/frankenphp:1-{$input.php-version} AS frankenphp_upstream
 
 # Base FrankenPHP image
 FROM frankenphp_upstream AS frankenphp_base
+
+ARG USER=www-data
 
 WORKDIR /app
 
@@ -66,6 +68,15 @@ RUN set -eux; \
 
 COPY --link frankenphp/conf.d/20-app.dev.ini $PHP_INI_DIR/app.conf.d/
 
+
+RUN \
+	# Use "adduser -D ${USER}" for alpine based distros
+	useradd -D ${USER}; \
+	# Remove default capability
+	setcap -r /usr/local/bin/frankenphp; \
+	# Give write access to /data/caddy and /config/caddy
+	chown -R ${USER}:${USER} /data/caddy && chown -R ${USER}:${USER} /config/caddy
+
 CMD [ "frankenphp", "run", "--config", "/etc/caddy/Caddyfile", "--watch" ]
 
 # Prod FrankenPHP image
@@ -84,7 +95,16 @@ COPY --link composer.* symfony.* ./
 RUN set -eux; \
 	composer install --no-cache --prefer-dist --no-dev --no-autoloader --no-scripts --no-progress
 
-# copy sources
+RUN \
+	# Use "adduser -D ${USER}" for alpine based distros
+	useradd -D ${USER}; \
+	# Remove default capability
+	setcap -r /usr/local/bin/frankenphp; \
+	# Give write access to /data/caddy and /config/caddy
+	chown -R ${USER}:${USER} /data/caddy && chown -R ${USER}:${USER} /config/caddy
+
+USER ${USER}
+
 COPY --link . ./
 RUN rm -Rf frankenphp/
 
